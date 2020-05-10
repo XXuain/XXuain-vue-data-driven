@@ -1,8 +1,3 @@
-/**
- *  通用
- *  */
-// 原始資料
-const origin = { first: 'Yellow', last: 'Huang' };
 // 檢查 fun
 const isObject = function (obj) {
   return obj && typeof obj === 'object';
@@ -19,17 +14,19 @@ Dep.prototype.add = function () {
   if (Dep.watcher) this.watchers.add(Dep.watcher);
 };
 
-Dep.prototype.notify = function () {};
-
-// default
-Dep.watcher = null;
+Dep.prototype.notify = function () {
+  this.watchers.forEach((w) => {
+    w.render();
+  });
+};
+Dep.watcher = null; // default
 
 // 註冊依賴 把 callback 丟給 watcher 讓 watcher 決定什麼時候要執行
-const watcher = function (callback) {
+const Watcher = function (callback) {
   this.callback = callback; // 把 render 記起來
   this.render(); // 執行
 };
-watcher.prototype.render = function () {
+Watcher.prototype.render = function () {
   // 跑 render 之前 要先把 watchers 註冊進去
   // 所以 註冊點在此 把自己放到 Dep.watcher 裡
   Dep.watcher = this;
@@ -44,9 +41,7 @@ const observe = function (data) {
     // 針對每個 key 做封裝
     Object.keys(data).forEach((key) => {
       let value = data[key];
-
-      // 每個 key 值都有一個依賴
-      const dep = new Dep();
+      const dep = new Dep(); // 每個 key 值都有一個依賴
 
       // 使用 defineProperty 進行覆蓋原本資料
       Object.defineProperty(data, key, {
@@ -57,10 +52,10 @@ const observe = function (data) {
           return value;
         },
         set(val) {
+          value = val;
           // 通知依賴
           dep.notify();
           console.log('ssssset: ', key);
-          value = val;
         },
       });
       // 再檢查內層是否為物件
@@ -70,13 +65,11 @@ const observe = function (data) {
   return data;
 };
 
-// 取用的 data 是已經經過封裝後的資料
+// 封裝 data
+const origin = { first: 'Yellow', last: 'Huang' };
 const data = observe(origin);
 
-new watcher(() => {
+// 把事件交給 watcher
+new Watcher(() => {
   document.querySelector('h1').innerHTML = `My name is ${data.first} ${data.last}`;
 });
-
-// function render() {
-//   document.querySelector('h1').innerHTML = `My name is ${data.first} ${data.last}`;
-// }
