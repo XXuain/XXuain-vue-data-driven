@@ -16,9 +16,13 @@ const Dep = function () {
 
 Dep.prototype.add = function () {
   // 加入某個東西 this.watchers.add(xxx)
+  if (Dep.watcher) this.watchers.add(Dep.watcher);
 };
 
 Dep.prototype.notify = function () {};
+
+// default
+Dep.watcher = null;
 
 // 註冊依賴 把 callback 丟給 watcher 讓 watcher 決定什麼時候要執行
 const watcher = function (callback) {
@@ -27,7 +31,7 @@ const watcher = function (callback) {
 };
 watcher.prototype.render = function () {
   // 跑 render 之前 要先把 watchers 註冊進去
-  // 所以 註冊點在此 把自己放到 Dep.watcher
+  // 所以 註冊點在此 把自己放到 Dep.watcher 裡
   Dep.watcher = this;
   this.callback();
 };
