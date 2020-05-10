@@ -4,16 +4,13 @@ const isObject = function (obj) {
 };
 
 const Dep = function () {
-  // 紀錄各個跟我相關的依賴
-  // 儲存資料 一般通常會用 Arr 這邊用 set
+  // 紀錄各個跟我相關的依賴 儲存資料 一般通常會用 Arr 這邊用 set
   this.watchers = new Set();
 };
-
 Dep.prototype.add = function () {
   // 加入某個東西 this.watchers.add(xxx)
   if (Dep.watcher) this.watchers.add(Dep.watcher);
 };
-
 Dep.prototype.notify = function () {
   this.watchers.forEach((w) => {
     w.render();
@@ -48,14 +45,14 @@ const observe = function (data) {
         get() {
           // 註冊依賴
           dep.add();
-          console.log('ggggget: ', key);
+          console.log('get: ', key);
           return value;
         },
         set(val) {
           value = val;
           // 通知依賴
           dep.notify();
-          console.log('ssssset: ', key);
+          console.log('set: ', key);
         },
       });
       // 再檢查內層是否為物件
@@ -65,11 +62,16 @@ const observe = function (data) {
   return data;
 };
 
+/*
+ *  開始執行
+ */
 // 封裝 data
 const origin = { first: 'Yellow', last: 'Huang' };
 const data = observe(origin);
 
-// 把事件交給 watcher
-new Watcher(() => {
+const render = () => {
   document.querySelector('h1').innerHTML = `My name is ${data.first} ${data.last}`;
-});
+};
+
+// 把事件交給 watcher
+new Watcher(render);
